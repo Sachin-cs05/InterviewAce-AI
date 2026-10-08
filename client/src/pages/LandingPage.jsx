@@ -117,99 +117,44 @@ export const LandingPage = () => {
   ];
 
   // =========================================================================
-  // STRENGTHENED SCROLL-DRIVEN REVEAL ANIMATION CALCULATIONS
-  // Highly noticeable, fully reversible, hardware-accelerated with parallax & blur
+  // =========================================================================
+  // SCROLL-DRIVEN REVEAL ANIMATION (Smooth, visible, and fully reversible)
+  // Hero text is crisp on load; preview card and sections reveal smoothly on scroll.
   // =========================================================================
   const s = heroScrollY;
-  const distFactor = deviceTier === 'mobile' ? 0.55 : deviceTier === 'tablet' ? 0.75 : 1.0;
-  const blurFactor = deviceTier === 'mobile' ? 0.4 : deviceTier === 'tablet' ? 0.75 : 1.0;
+  const distFactor = deviceTier === 'mobile' ? 0.6 : deviceTier === 'tablet' ? 0.8 : 1.0;
 
-  // 1. AI BADGE (0px -> 140px)
-  // Initial: opacity ~0.35, translateY: 50px, scale: 0.92, blur: 4px
-  const pBadge = Math.min(1, s / 140);
-  const badgeY = (1 - pBadge) * (50 * distFactor) - pBadge * (s * 0.08);
-  const badgeScale = 0.92 + pBadge * 0.08;
-  const badgeBlur = (1 - pBadge) * (4 * blurFactor);
-  const badgeOpacity = 0.35 + pBadge * 0.65;
-  const badgeStyle = reducedMotion
+  // 1. Hero text gentle parallax on scroll (subtle upward float)
+  const heroParallaxY = -s * 0.12 * distFactor;
+  const heroFade = Math.max(0.2, 1 - (s / 650) * 0.85);
+
+  const heroScrollTextStyle = reducedMotion
     ? {}
     : {
-        transform: `translate3d(0, ${badgeY.toFixed(1)}px, 0) scale(${badgeScale.toFixed(3)})`,
-        opacity: badgeOpacity.toFixed(2),
-        filter: badgeBlur > 0.05 ? `blur(${badgeBlur.toFixed(1)}px)` : 'none',
+        transform: `translate3d(0, ${heroParallaxY.toFixed(1)}px, 0)`,
+        opacity: heroFade.toFixed(2),
+        transition: 'opacity 0.1s linear',
       };
 
-  // 2. MAIN HEADING (0px -> 200px)
-  // Initial: opacity ~0.35, translateY: 100px, scale: 0.92, blur: 5px
-  const pHeading = Math.min(1, s / 200);
-  const headingY = (1 - pHeading) * (100 * distFactor) - pHeading * (s * 0.1);
-  const headingScale = 0.92 + pHeading * 0.08;
-  const headingBlur = (1 - pHeading) * (5 * blurFactor);
-  const headingOpacity = 0.35 + pHeading * 0.65;
-  const headingStyle = reducedMotion
-    ? {}
-    : {
-        transform: `translate3d(0, ${headingY.toFixed(1)}px, 0) scale(${headingScale.toFixed(3)})`,
-        opacity: headingOpacity.toFixed(2),
-        filter: headingBlur > 0.05 ? `blur(${headingBlur.toFixed(1)}px)` : 'none',
-      };
+  const badgeStyle = heroScrollTextStyle;
+  const headingStyle = heroScrollTextStyle;
+  const descStyle = heroScrollTextStyle;
+  const ctaStyle = heroScrollTextStyle;
+  const trustStyle = heroScrollTextStyle;
 
-  // 3. DESCRIPTION (staggered: 30px -> 280px)
-  // Initial: opacity ~0.30, translateY: 80px, blur: 3px
-  const pDesc = Math.min(1, Math.max(0, (s - 30) / 250));
-  const descY = (1 - pDesc) * (80 * distFactor) - pDesc * (s * 0.12);
-  const descBlur = (1 - pDesc) * (3 * blurFactor);
-  const descOpacity = 0.30 + pDesc * 0.70;
-  const descStyle = reducedMotion
-    ? {}
-    : {
-        transform: `translate3d(0, ${descY.toFixed(1)}px, 0)`,
-        opacity: descOpacity.toFixed(2),
-        filter: descBlur > 0.05 ? `blur(${descBlur.toFixed(1)}px)` : 'none',
-      };
+  // 2. INTERVIEW PRODUCT PREVIEW (Noticeable progressive scroll reveal)
+  // Initial: opacity 0.5, translateY 50px, scale 0.96 -> Full reveal by 260px scroll
+  const pPreview = Math.min(1, s / 260);
+  const previewY = (1 - pPreview) * 50 * distFactor;
+  const previewScale = 0.96 + pPreview * 0.04;
+  const previewOpacity = 0.5 + pPreview * 0.5;
 
-  // 4. CTA BUTTONS (staggered: 60px -> 340px)
-  // Initial: opacity ~0.25, translateY: 70px, scale: 0.94, blur: 2.5px
-  const pCTA = Math.min(1, Math.max(0, (s - 60) / 280));
-  const ctaY = (1 - pCTA) * (70 * distFactor) - pCTA * (s * 0.14);
-  const ctaScale = 0.94 + pCTA * 0.06;
-  const ctaBlur = (1 - pCTA) * (2.5 * blurFactor);
-  const ctaOpacity = 0.25 + pCTA * 0.75;
-  const ctaStyle = reducedMotion
-    ? {}
-    : {
-        transform: `translate3d(0, ${ctaY.toFixed(1)}px, 0) scale(${ctaScale.toFixed(3)})`,
-        opacity: ctaOpacity.toFixed(2),
-        filter: ctaBlur > 0.05 ? `blur(${ctaBlur.toFixed(1)}px)` : 'none',
-      };
-
-  // 5. TRUST POINTS (staggered: 100px -> 400px)
-  // Initial: opacity ~0.20, translateY: 60px
-  const pTrust = Math.min(1, Math.max(0, (s - 100) / 300));
-  const trustY = (1 - pTrust) * (60 * distFactor) - pTrust * (s * 0.15);
-  const trustOpacity = 0.20 + pTrust * 0.80;
-  const trustStyle = reducedMotion
-    ? {}
-    : {
-        transform: `translate3d(0, ${trustY.toFixed(1)}px, 0)`,
-        opacity: trustOpacity.toFixed(2),
-      };
-
-  // 6. INTERVIEW PRODUCT PREVIEW (STRONGEST EFFECT: 40px -> 520px)
-  // Initial: opacity ~0.15, translateY: 180px, scale: 0.88, blur: 8px
-  const rawPreviewP = Math.min(1, Math.max(0, (s - 40) / 480));
-  const easedPreview = 1 - Math.pow(1 - rawPreviewP, 2.5);
-  const previewInitialScale = 0.88 + (1 - distFactor) * 0.05;
-  const previewY = (1 - easedPreview) * (180 * distFactor) - easedPreview * (s * 0.08);
-  const previewScale = previewInitialScale + easedPreview * (1 - previewInitialScale);
-  const previewBlur = (1 - easedPreview) * (8 * blurFactor);
-  const previewOpacity = 0.15 + easedPreview * 0.85;
   const previewStyle = reducedMotion
     ? {}
     : {
         transform: `translate3d(0, ${previewY.toFixed(1)}px, 0) scale(${previewScale.toFixed(3)})`,
         opacity: previewOpacity.toFixed(2),
-        filter: previewBlur > 0.05 ? `blur(${previewBlur.toFixed(1)}px)` : 'none',
+        transition: 'transform 0.1s ease-out, opacity 0.1s ease-out',
       };
 
   return (

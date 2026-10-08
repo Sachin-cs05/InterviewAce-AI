@@ -20,6 +20,7 @@ export const ProctoringWebcamTile = ({ stream, violationCount = 0 }) => {
 
   return (
     <div
+      className="proctor-webcam-tile"
       style={{
         position: 'fixed',
         bottom: '24px',
@@ -109,7 +110,7 @@ export const ProctoringWebcamTile = ({ stream, violationCount = 0 }) => {
           }}
         />
 
-        {/* Anti-Cheating Shield Badge */}
+        {/* Proctoring Shield Badge */}
         <div
           style={{
             position: 'absolute',
@@ -128,7 +129,7 @@ export const ProctoringWebcamTile = ({ stream, violationCount = 0 }) => {
           }}
         >
           <Shield size={10} />
-          <span>AI Anti-Cheat</span>
+          <span>Proctoring Active</span>
         </div>
 
         {/* Warning Indicator if any violations recorded */}

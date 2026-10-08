@@ -183,12 +183,12 @@ export const HistoryPage = () => {
             <History size={24} />
           </div>
           <h3 style={{ fontSize: '1.125rem', fontWeight: 700, marginBottom: '6px', color: 'var(--text-primary)' }}>
-            No Sessions Found
+            {searchQuery || filterType !== 'ALL' ? 'No Sessions Found' : 'No interviews yet'}
           </h3>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', maxWidth: '360px', marginBottom: '20px', lineHeight: 1.5 }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', maxWidth: '380px', marginBottom: '20px', lineHeight: 1.5 }}>
             {searchQuery || filterType !== 'ALL'
-              ? 'No interviews match your search or filter criteria.'
-              : "You haven't conducted any mock interviews yet."}
+              ? 'No interviews match your search or filter criteria. Try clearing your filters.'
+              : 'Start your first mock interview to see your performance history here.'}
           </p>
           <Link to="/interview/new" className="btn btn-primary btn-sm btn-hover-arrow">
             <Sparkles size={15} />
@@ -207,7 +207,7 @@ export const HistoryPage = () => {
                     <th style={{ padding: '14px 24px', fontWeight: 600 }}>Job Role</th>
                     <th style={{ padding: '14px 20px', fontWeight: 600 }}>Interview Type</th>
                     <th style={{ padding: '14px 20px', fontWeight: 600 }}>Duration</th>
-                    <th style={{ padding: '14px 20px', fontWeight: 600 }}>Questions</th>
+                    <th style={{ padding: '14px 20px', fontWeight: 600 }}>Questions Answered</th>
                     <th style={{ padding: '14px 20px', fontWeight: 600 }}>Score</th>
                     <th style={{ padding: '14px 20px', fontWeight: 600 }}>Date</th>
                     <th style={{ padding: '14px 20px', fontWeight: 600 }}>Status</th>
@@ -223,8 +223,9 @@ export const HistoryPage = () => {
                       year: 'numeric',
                     });
                     const answeredCount =
-                      item.questions?.filter((q) => q.userAnswer && q.userAnswer.trim().length > 0)?.length ||
-                      item.questionCount;
+                      item.answeredQuestionCount ??
+                      (item.questions?.filter((q) => q.userAnswer && q.userAnswer.trim().length > 0)?.length ||
+                      item.questionCount || 0);
 
                     return (
                       <tr key={item._id} style={{ borderBottom: '1px solid var(--border-subtle)' }} className="table-row-hover">
@@ -240,7 +241,7 @@ export const HistoryPage = () => {
                           </span>
                         </td>
                         <td style={{ padding: '16px 20px', color: 'var(--text-secondary)' }}>
-                          {answeredCount} Questions
+                          {answeredCount} Answered
                         </td>
                         <td style={{ padding: '16px 20px' }}>
                           {getScoreBadge(score)}
@@ -249,14 +250,19 @@ export const HistoryPage = () => {
                           {dateStr}
                         </td>
                         <td style={{ padding: '16px 20px' }}>
-                          <span className={`badge ${item.status === 'completed' ? 'badge-success' : 'badge-default'}`}>
-                            {item.status === 'completed' ? 'Completed' : 'In Progress'}
+                          <span className={`badge ${item.status === 'completed' ? 'badge-success' : item.status === 'ready' ? 'badge-warning' : 'badge-default'}`}>
+                            {item.status === 'completed' ? 'Completed' : item.status === 'ready' ? 'Ready' : 'In Progress'}
                           </span>
                         </td>
                         <td style={{ padding: '16px 24px', textAlign: 'right' }}>
                           {item.status === 'completed' ? (
                             <Link to={`/interview/${item._id}/result`} className="btn btn-secondary btn-sm">
                               <span>View Report</span>
+                              <ArrowRight size={13} />
+                            </Link>
+                          ) : item.status === 'ready' ? (
+                            <Link to={`/interview/${item._id}`} className="btn btn-primary btn-sm">
+                              <span>Start</span>
                               <ArrowRight size={13} />
                             </Link>
                           ) : (
@@ -284,8 +290,9 @@ export const HistoryPage = () => {
                 year: 'numeric',
               });
               const answeredCount =
-                item.questions?.filter((q) => q.userAnswer && q.userAnswer.trim().length > 0)?.length ||
-                item.questionCount;
+                item.answeredQuestionCount ??
+                (item.questions?.filter((q) => q.userAnswer && q.userAnswer.trim().length > 0)?.length ||
+                item.questionCount || 0);
 
               return (
                 <div key={item._id} className="saas-card" style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -295,7 +302,7 @@ export const HistoryPage = () => {
                         {item.jobRole}
                       </div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                        {dateStr} • ⏱ {item.duration || 30} min • {answeredCount} Qs
+                        {dateStr} • ⏱ {item.duration || 30} min • {answeredCount} Answered
                       </div>
                     </div>
                     <span className="badge badge-default">{item.interviewType}</span>
@@ -306,6 +313,11 @@ export const HistoryPage = () => {
                     {item.status === 'completed' ? (
                       <Link to={`/interview/${item._id}/result`} className="btn btn-secondary btn-sm">
                         <span>View Report</span>
+                        <ChevronRight size={14} />
+                      </Link>
+                    ) : item.status === 'ready' ? (
+                      <Link to={`/interview/${item._id}`} className="btn btn-primary btn-sm">
+                        <span>Start</span>
                         <ChevronRight size={14} />
                       </Link>
                     ) : (

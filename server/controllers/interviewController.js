@@ -80,9 +80,6 @@ const createInterview = async (req, res) => {
       resumeSnippet: parsedResumeText || '',
     });
 
-    const startTime = new Date();
-    const endTime = new Date(startTime.getTime() + sessionDuration * 60 * 1000);
-
     const interview = await Interview.create({
       userId: req.user._id,
       jobRole: cleanedRole,
@@ -92,12 +89,16 @@ const createInterview = async (req, res) => {
       interviewType,
       experienceLevel,
       duration: sessionDuration,
-      startTime,
-      endTime,
-      questionCount: questions.length,
+      startTime: null,
+      endTime: null,
+      questionCount: 0,
+      generatedQuestionCount: questions.length,
+      answeredQuestionCount: 0,
+      violationCount: 0,
+      violations: [],
       resumeFileName,
       resumeTextSnippet: parsedResumeText ? parsedResumeText.substring(0, 1500) : null,
-      status: 'in_progress',
+      status: 'ready',
       currentQuestionIndex: 0,
       questions,
     });
@@ -113,6 +114,43 @@ const createInterview = async (req, res) => {
       success: false,
       message: error.message || 'Failed to initialize interview',
     });
+  }
+};
+
+// @desc    Start interview when candidate completes setup and is ready
+// @route   POST /api/interviews/:id/start
+// @access  Private
+const startInterview = async (req, res) => {
+  try {
+    const interview = await Interview.findOne({
+      _id: req.params.id,
+      userId: req.user._id,
+    });
+
+    if (!interview) {
+      return res.status(404).json({ success: false, message: 'Interview session not found' });
+    }
+
+    if (interview.status === 'completed') {
+      return res.status(400).json({ success: false, message: 'Interview has already been completed' });
+    }
+
+    // Only set start and end times if not yet started
+    if (interview.status === 'ready' || !interview.startTime) {
+      interview.status = 'in_progress';
+      const now = new Date();
+      interview.startTime = now;
+      interview.endTime = new Date(now.getTime() + (interview.duration || 30) * 60 * 1000);
+      await interview.save();
+    }
+
+    return res.status(200).json({
+      success: true,
+      interview,
+    });
+  } catch (error) {
+    console.error('Start interview error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to start interview' });
   }
 };
 
@@ -260,7 +298,11 @@ const submitAnswer = async (req, res) => {
       }
     }
 
-    interview.questionCount = interview.questions.length;
+    interview.generatedQuestionCount = interview.questions.length;
+    interview.answeredQuestionCount = interview.questions.filter(
+      (q) => q.userAnswer && q.userAnswer.trim().length > 0
+    ).length;
+    interview.questionCount = interview.answeredQuestionCount;
     await interview.save();
 
     return res.status(200).json({
@@ -296,6 +338,11 @@ const completeInterview = async (req, res) => {
     if (interview.status !== 'completed') {
       interview.status = 'completed';
       interview.completedAt = new Date();
+      interview.generatedQuestionCount = interview.questions.length;
+      interview.answeredQuestionCount = interview.questions.filter(
+        (q) => q.userAnswer && q.userAnswer.trim().length > 0
+      ).length;
+      interview.questionCount = interview.answeredQuestionCount;
       interview.finalReport = generateFinalReport(interview.questions);
       await interview.save();
     }
@@ -309,6 +356,50 @@ const completeInterview = async (req, res) => {
   } catch (error) {
     console.error('Complete interview error:', error);
     return res.status(500).json({ success: false, message: 'Failed to complete interview session' });
+  }
+};
+
+// @desc    Record a proctoring notice/violation during interview
+// @route   POST /api/interviews/:id/violation
+// @access  Private
+const recordViolation = async (req, res) => {
+  try {
+    const { type } = req.body;
+    const interview = await Interview.findOne({
+      _id: req.params.id,
+      userId: req.user._id,
+    });
+
+    if (!interview) {
+      return res.status(404).json({ success: false, message: 'Interview session not found' });
+    }
+
+    if (interview.status === 'completed') {
+      return res.status(200).json({ success: true, violationCount: interview.violationCount || 0 });
+    }
+
+    const validTypes = ['fullscreen_exit', 'tab_switch'];
+    const violationType = validTypes.includes(type) ? type : 'fullscreen_exit';
+
+    interview.violationCount = (interview.violationCount || 0) + 1;
+    if (!interview.violations) {
+      interview.violations = [];
+    }
+    interview.violations.push({
+      type: violationType,
+      timestamp: new Date(),
+    });
+
+    await interview.save();
+
+    return res.status(200).json({
+      success: true,
+      violationCount: interview.violationCount,
+      violations: interview.violations,
+    });
+  } catch (error) {
+    console.error('Record violation error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to record violation' });
   }
 };
 
@@ -342,7 +433,7 @@ const getFinalReport = async (req, res) => {
 const getInterviewHistory = async (req, res) => {
   try {
     const interviews = await Interview.find({ userId: req.user._id })
-      .select('jobRole jobRoleType customSkills customDescription interviewType experienceLevel duration questionCount questions status finalReport createdAt completedAt')
+      .select('jobRole jobRoleType customSkills customDescription interviewType experienceLevel duration questionCount generatedQuestionCount answeredQuestionCount questions status violationCount finalReport createdAt completedAt')
       .sort({ createdAt: -1 });
 
     return res.status(200).json({ success: true, count: interviews.length, interviews });
@@ -371,7 +462,12 @@ const getDashboardStats = async (req, res) => {
     }
 
     const recentInterviews = interviews.slice(0, 5).map((item) => {
-      const answeredCount = item.questions?.filter((q) => q.userAnswer && q.userAnswer.trim().length > 0)?.length || item.questionCount;
+      const answeredCount =
+        item.answeredQuestionCount ??
+        (item.questions?.filter((q) => q.userAnswer && q.userAnswer.trim().length > 0)?.length || item.questionCount || 0);
+      const generatedCount =
+        item.generatedQuestionCount ??
+        (item.questions?.length || item.questionCount || 0);
       return {
         _id: item._id,
         jobRole: item.jobRole,
@@ -379,6 +475,8 @@ const getDashboardStats = async (req, res) => {
         experienceLevel: item.experienceLevel,
         duration: item.duration || 30,
         questionCount: answeredCount,
+        answeredQuestionCount: answeredCount,
+        generatedQuestionCount: generatedCount,
         status: item.status,
         score: item.finalReport?.overallScore || 0,
         createdAt: item.createdAt,
@@ -402,9 +500,11 @@ const getDashboardStats = async (req, res) => {
 
 module.exports = {
   createInterview,
+  startInterview,
   getInterview,
   submitAnswer,
   completeInterview,
+  recordViolation,
   getFinalReport,
   getInterviewHistory,
   getDashboardStats,

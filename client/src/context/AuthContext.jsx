@@ -29,6 +29,14 @@ export const AuthProvider = ({ children }) => {
     verifyAuth();
   }, [token]);
 
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      logout();
+    };
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
+  }, []);
+
   const login = async (email, password) => {
     const res = await api.login(email, password);
     if (res.success && res.token) {

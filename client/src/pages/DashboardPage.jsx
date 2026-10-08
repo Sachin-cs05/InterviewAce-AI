@@ -344,7 +344,7 @@ export const DashboardPage = () => {
                   <th style={{ padding: '12px 24px', fontWeight: 600 }}>Job Role</th>
                   <th style={{ padding: '12px 20px', fontWeight: 600 }}>Interview Type</th>
                   <th style={{ padding: '12px 20px', fontWeight: 600 }}>Duration</th>
-                  <th style={{ padding: '12px 20px', fontWeight: 600 }}>Questions</th>
+                  <th style={{ padding: '12px 20px', fontWeight: 600 }}>Questions Answered</th>
                   <th style={{ padding: '12px 20px', fontWeight: 600 }}>Score</th>
                   <th style={{ padding: '12px 20px', fontWeight: 600 }}>Date</th>
                   <th style={{ padding: '12px 24px', fontWeight: 600, textAlign: 'right' }}>Action</th>
@@ -357,6 +357,7 @@ export const DashboardPage = () => {
                     day: 'numeric',
                     year: 'numeric',
                   });
+                  const answeredCount = item.answeredQuestionCount ?? item.questionCount ?? 0;
                   return (
                     <tr key={item._id} style={{ borderBottom: '1px solid var(--border-subtle)' }} className="table-row-hover">
                       <td style={{ padding: '16px 24px', fontWeight: 600, color: 'var(--text-primary)' }}>
@@ -371,7 +372,7 @@ export const DashboardPage = () => {
                         </span>
                       </td>
                       <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
-                        {item.questionCount || 0} Questions
+                        {answeredCount} Answered
                       </td>
                       <td style={{ padding: '16px 20px' }}>
                         {getScoreBadge(item.score)}
@@ -383,6 +384,11 @@ export const DashboardPage = () => {
                         {item.status === 'completed' ? (
                           <Link to={`/interview/${item._id}/result`} className="btn btn-secondary btn-sm">
                             <span>View Report</span>
+                            <ArrowRight size={13} />
+                          </Link>
+                        ) : item.status === 'ready' ? (
+                          <Link to={`/interview/${item._id}`} className="btn btn-primary btn-sm">
+                            <span>Start</span>
                             <ArrowRight size={13} />
                           </Link>
                         ) : (

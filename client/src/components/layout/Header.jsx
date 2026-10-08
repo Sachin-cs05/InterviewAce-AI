@@ -101,7 +101,7 @@ export const Header = ({ title = 'Dashboard', onOpenMobileNav }) => {
                 <strong>1. Role Customization:</strong> Select your target tech stack and upload an optional PDF resume for project-specific questions.
               </p>
               <p>
-                <strong>2. Answer Modes:</strong> Speak naturally via browser speech recognition or toggle keyboard text input anytime.
+                <strong>2. Answer Modes:</strong> Speak naturally using your microphone with real-time speech-to-text, or toggle keyboard text input anytime.
               </p>
               <p>
                 <strong>3. AI Scoring:</strong> Each answer is scored on technical correctness, clarity, and depth, pinpointing missing edge cases.

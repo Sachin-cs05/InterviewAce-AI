@@ -208,10 +208,10 @@ export const ProctoringSetupModal = ({ onComplete, interviewTitle = 'AI Technica
               </div>
             </div>
             <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-              Device Readiness & Anti-Cheating Check
+              Device Readiness & Proctoring Check
             </h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginTop: '6px', margin: 0 }}>
-              Camera and microphone are mandatory. Interview will launch in full-screen mode to prevent cheating.
+              Camera and microphone are required. Fullscreen and browser activity monitoring are enabled to maintain a focused assessment environment.
             </p>
           </div>
         </div>
@@ -381,7 +381,7 @@ export const ProctoringSetupModal = ({ onComplete, interviewTitle = 'AI Technica
                 </div>
                 <div>
                   <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>Webcam Feed</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Continuous identity proctoring</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Live candidate video monitoring</div>
                 </div>
               </div>
               {hasCamera ? <CheckCircle2 size={18} color="#16A34A" /> : <XCircle size={18} color="#DC2626" />}
@@ -422,7 +422,7 @@ export const ProctoringSetupModal = ({ onComplete, interviewTitle = 'AI Technica
               {hasMic ? <CheckCircle2 size={18} color="#16A34A" /> : <XCircle size={18} color="#DC2626" />}
             </div>
 
-            {/* Check 3: Fullscreen Anti-Cheating Lock */}
+            {/* Check 3: Fullscreen Focus Monitoring */}
             <div
               style={{
                 padding: '12px 14px',
@@ -450,8 +450,8 @@ export const ProctoringSetupModal = ({ onComplete, interviewTitle = 'AI Technica
                   <Maximize size={18} />
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>Fullscreen Lock</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Exiting or tab switching triggers alert</div>
+                  <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>Fullscreen Monitoring</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Fullscreen and window focus are monitored</div>
                 </div>
               </div>
               <Lock size={16} color="#4F46E5" />
@@ -469,7 +469,7 @@ export const ProctoringSetupModal = ({ onComplete, interviewTitle = 'AI Technica
                 lineHeight: 1.45,
               }}
             >
-              <strong>Anti-Cheating Rules:</strong> Window switching, exiting fullscreen, or turning off camera will be logged as security strikes in your final evaluation report.
+              <strong>Proctoring Guidelines:</strong> Window switching and exiting fullscreen are monitored and logged as focus notices in your session report.
             </div>
           </div>
         </div>

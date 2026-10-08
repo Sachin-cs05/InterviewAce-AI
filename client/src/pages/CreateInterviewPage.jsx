@@ -187,6 +187,11 @@ export const CreateInterviewPage = () => {
       setError(errMessage);
       toast.error(errMessage);
       setLoading(false);
+      if (err.message && err.message.toLowerCase().includes('not authorized')) {
+        setTimeout(() => {
+          navigate('/login');
+        }, 1200);
+      }
     }
   };
 
@@ -546,19 +551,15 @@ export const CreateInterviewPage = () => {
 
             {/* Quick Preset Buttons */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '14px' }}>
-              {[
-                { label: 'Quick', mins: 15 },
-                { label: 'Standard', mins: 30 },
-                { label: 'Deep Practice', mins: 60 },
-              ].map((preset) => {
-                const isSelected = duration === preset.mins;
+              {[15, 30, 45, 60, 90].map((mins) => {
+                const isSelected = duration === mins;
                 return (
                   <button
-                    key={preset.mins}
+                    key={mins}
                     type="button"
-                    onClick={() => setDuration(preset.mins)}
+                    onClick={() => setDuration(mins)}
                     style={{
-                      padding: '6px 14px',
+                      padding: '7px 16px',
                       fontSize: '0.8125rem',
                       fontWeight: 600,
                       borderRadius: 'var(--radius-sm)',
@@ -570,14 +571,14 @@ export const CreateInterviewPage = () => {
                       boxShadow: isSelected ? 'var(--shadow-xs)' : 'none',
                     }}
                   >
-                    {preset.label} <span style={{ opacity: 0.8, fontSize: '0.75rem' }}>{preset.mins} min</span>
+                    <span>{mins} min</span>
                   </button>
                 );
               })}
-              {duration !== 15 && duration !== 30 && duration !== 60 && (
+              {![15, 30, 45, 60, 90].includes(duration) && (
                 <span
                   style={{
-                    padding: '6px 12px',
+                    padding: '7px 14px',
                     fontSize: '0.8125rem',
                     fontWeight: 600,
                     borderRadius: 'var(--radius-sm)',

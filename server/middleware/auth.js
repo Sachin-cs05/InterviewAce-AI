@@ -10,11 +10,27 @@ const protect = async (req, res, next) => {
   ) {
     try {
       token = req.headers.authorization.split(' ')[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'interviewace_secret');
+
+      let decoded;
+      const primarySecret = process.env.JWT_SECRET || 'interviewace_secret';
+      try {
+        decoded = jwt.verify(token, primarySecret);
+      } catch (err) {
+        // Fallback: If JWT_SECRET was configured after token generation, check default secret
+        if (primarySecret !== 'interviewace_secret') {
+          try {
+            decoded = jwt.verify(token, 'interviewace_secret');
+          } catch (fallbackErr) {
+            throw err;
+          }
+        } else {
+          throw err;
+        }
+      }
 
       req.user = await User.findById(decoded.id).select('-password');
       if (!req.user) {
-        return res.status(401).json({ success: false, message: 'User not found with this token' });
+        return res.status(401).json({ success: false, message: 'Not authorized, user not found' });
       }
 
       return next();

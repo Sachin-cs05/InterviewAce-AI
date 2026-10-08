@@ -86,7 +86,7 @@ const interviewSchema = new mongoose.Schema(
     },
     startTime: {
       type: Date,
-      default: Date.now,
+      default: null,
     },
     endTime: {
       type: Date,
@@ -94,8 +94,33 @@ const interviewSchema = new mongoose.Schema(
     },
     questionCount: {
       type: Number,
-      default: 10,
+      default: 0,
     },
+    generatedQuestionCount: {
+      type: Number,
+      default: 0,
+    },
+    answeredQuestionCount: {
+      type: Number,
+      default: 0,
+    },
+    violationCount: {
+      type: Number,
+      default: 0,
+    },
+    violations: [
+      {
+        type: {
+          type: String,
+          enum: ['fullscreen_exit', 'tab_switch'],
+          required: true,
+        },
+        timestamp: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
     resumeFileName: {
       type: String,
       default: null,
@@ -106,8 +131,8 @@ const interviewSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['in_progress', 'completed', 'abandoned'],
-      default: 'in_progress',
+      enum: ['ready', 'in_progress', 'completed', 'abandoned'],
+      default: 'ready',
     },
     currentQuestionIndex: {
       type: Number,

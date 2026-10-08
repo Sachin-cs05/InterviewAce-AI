@@ -173,10 +173,11 @@ export const ProfilePage = () => {
 
           <div className="form-group">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <label className="form-label">Email Address</label>
+              <label className="form-label" htmlFor="profile-email">Email Address</label>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Read-only</span>
             </div>
             <input
+              id="profile-email"
               type="email"
               disabled
               className="form-input"

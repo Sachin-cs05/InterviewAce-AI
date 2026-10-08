@@ -12,6 +12,7 @@ import {
   Award,
   Clock,
   FileText,
+  ShieldCheck,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { api } from '../services/api';
@@ -93,10 +94,15 @@ export const InterviewResultPage = () => {
     { name: 'Problem Solving', score: report.problemSolving || overall, desc: 'Trade-off analysis and architecture flow' },
   ];
 
-  const actualQuestionsCount =
-    interview?.questions?.filter((q) => q.userAnswer && q.userAnswer.trim().length > 0)?.length ||
-    interview?.questions?.length ||
-    0;
+  const answeredQuestionsCount =
+    interview?.answeredQuestionCount ??
+    (interview?.questions?.filter((q) => q.userAnswer && q.userAnswer.trim().length > 0)?.length || 0);
+
+  const generatedQuestionsCount =
+    interview?.generatedQuestionCount ??
+    (interview?.questions?.length || 0);
+
+  const violationCount = interview?.violationCount || 0;
 
   return (
     <div style={{ maxWidth: '960px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '32px' }}>
@@ -168,11 +174,11 @@ export const InterviewResultPage = () => {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            Actual Questions Asked
+            Questions Answered
           </span>
           <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <FileText size={18} style={{ color: 'var(--accent-primary)' }} />
-            <span>{actualQuestionsCount}</span>
+            <span>{answeredQuestionsCount} of {generatedQuestionsCount}</span>
           </div>
         </div>
 
@@ -192,6 +198,25 @@ export const InterviewResultPage = () => {
           >
             <Award size={18} />
             <span>{Math.round(overall > 10 ? overall : overall * 10)}/100</span>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            Proctoring Notices
+          </span>
+          <div
+            style={{
+              fontSize: '1.25rem',
+              fontWeight: 700,
+              color: violationCount > 0 ? '#D97706' : '#16A34A',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+          >
+            <ShieldCheck size={18} />
+            <span>{violationCount} recorded</span>
           </div>
         </div>
       </div>

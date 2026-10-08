@@ -57,6 +57,14 @@ export const api = {
     return handleResponse(res);
   },
 
+  async startInterview(id) {
+    const res = await fetch(`${BASE_URL}/interviews/${id}/start`, {
+      method: 'POST',
+      headers: getHeaders(),
+    });
+    return handleResponse(res);
+  },
+
   async submitAnswer(id, { questionIndex, answerText, audioUsed, timeSpentSeconds }) {
     const res = await fetch(`${BASE_URL}/interviews/${id}/answer`, {
       method: 'POST',
@@ -77,6 +85,15 @@ export const api = {
     const res = await fetch(`${BASE_URL}/interviews/${id}/complete`, {
       method: 'POST',
       headers: getHeaders(),
+    });
+    return handleResponse(res);
+  },
+
+  async recordViolation(id, { type }) {
+    const res = await fetch(`${BASE_URL}/interviews/${id}/violation`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ type }),
     });
     return handleResponse(res);
   },
@@ -107,8 +124,12 @@ export const api = {
 };
 
 async function handleResponse(res) {
-  const data = await res.json();
+  const data = await res.json().catch(() => ({}));
   if (!res.ok) {
+    if (res.status === 401) {
+      localStorage.removeItem('interviewace_token');
+      window.dispatchEvent(new CustomEvent('auth:unauthorized', { detail: data.message }));
+    }
     throw new Error(data.message || `Request failed with status ${res.status}`);
   }
   return data;

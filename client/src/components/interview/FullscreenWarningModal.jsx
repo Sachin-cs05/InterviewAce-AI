@@ -69,13 +69,13 @@ export const FullscreenWarningModal = ({ onReEnterFullscreen, violationCount = 1
               color: '#DC2626',
             }}
           >
-            Anti-Cheating Security Alert
+            Proctoring Focus Notice
           </div>
           <h2 style={{ fontSize: '1.35rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
             Fullscreen Mode Exited
           </h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', lineHeight: 1.5, margin: 0 }}>
-            You have exited fullscreen mode. Leaving fullscreen or switching tabs is flagged as a proctoring violation.
+            You have exited fullscreen mode. Fullscreen and window focus are monitored to maintain a consistent assessment environment.
           </p>
         </div>
 
@@ -96,7 +96,7 @@ export const FullscreenWarningModal = ({ onReEnterFullscreen, violationCount = 1
           }}
         >
           <AlertTriangle size={16} />
-          <span>Security Violation #{violationCount} recorded for review</span>
+          <span>Proctoring Notice #{violationCount} recorded for review</span>
         </div>
 
         <button
