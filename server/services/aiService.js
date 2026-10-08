@@ -606,6 +606,13 @@ function synthesizeCustomRoleQuestions({ jobRole, customSkills = '', customDescr
   return questions.slice(0, count);
 }
 
+// Helper to validate Google AI Studio Gemini API key format (starts with AIzaSy or AQ.)
+const isValidGeminiKey = (key) => {
+  if (!key || typeof key !== 'string') return false;
+  const trimmed = key.trim();
+  return (trimmed.startsWith('AIzaSy') || trimmed.startsWith('AQ.')) && trimmed.length >= 35;
+};
+
 /**
  * Generate questions tailored to role, type, level, and count (incorporating custom role & resume text if provided)
  */
@@ -619,8 +626,8 @@ const generateInterviewQuestions = async ({
   questionCount = 5,
   resumeSnippet = '',
 }) => {
-  // If external API keys (Gemini / OpenAI) exist, try calling them first
-  if (process.env.GEMINI_API_KEY) {
+  // If external API keys (Gemini / OpenAI) exist and are valid, try calling them first
+  if (isValidGeminiKey(process.env.GEMINI_API_KEY)) {
     try {
       const questions = await callGeminiForQuestions({
         jobRole,
@@ -745,7 +752,7 @@ const evaluateCandidateAnswer = async ({
   jobRole,
   experienceLevel,
 }) => {
-  if (process.env.GEMINI_API_KEY && userAnswer.trim().length > 5) {
+  if (isValidGeminiKey(process.env.GEMINI_API_KEY) && userAnswer.trim().length > 5) {
     try {
       const aiEval = await callGeminiForEvaluation({
         questionText,
@@ -996,7 +1003,7 @@ async function callGeminiForQuestions({
   resumeSnippet,
 }) {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return null;
+  if (!isValidGeminiKey(apiKey)) return null;
 
   const prompt = `You are a senior tech hiring manager and principal technical interviewer. Generate exactly ${questionCount} realistic, rigorous, and relevant interview questions for the role: "${jobRole}", interview type "${interviewType}", and experience level "${experienceLevel}".
 ${customSkills ? `Focus on these required technologies and skills: ${customSkills}` : ''}
@@ -1012,10 +1019,13 @@ Return ONLY a valid JSON array of objects with the schema:
   }
 ]`;
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
   const response = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': apiKey,
+    },
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: { responseMimeType: 'application/json' },
@@ -1030,7 +1040,7 @@ Return ONLY a valid JSON array of objects with the schema:
 
 async function callGeminiForEvaluation({ questionText, userAnswer, jobRole, experienceLevel }) {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return null;
+  if (!isValidGeminiKey(apiKey)) return null;
 
   const prompt = `You are evaluating a candidate's answer for the role of ${jobRole} (${experienceLevel}).
 Question: "${questionText}"
@@ -1049,10 +1059,13 @@ Return ONLY valid JSON matching this schema:
   "improvementSuggestion": "Concrete actionable tip to make this a 10/10 answer."
 }`;
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
   const response = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': apiKey,
+    },
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: { responseMimeType: 'application/json' },
